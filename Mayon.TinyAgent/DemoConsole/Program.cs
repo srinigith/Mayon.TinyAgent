@@ -1,21 +1,22 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using Mayon.TinyAgent;
 
-Console.WriteLine("Welcom!");
+Console.WriteLine("Welcome!");
 string modelPath = @"F:\Huggingface_Models\gemma-2-2b-it-GGUF\gemma-2-2b-it-Q4_K_M.gguf";
 //modelPath = @"F:\Huggingface_Models\sweep-next-edit-1.5B\sweep-next-edit-1.5b.q8_0.v2.gguf";
 AgentCore tinyAgent = new AgentCore("Supriya", "Receptionist");
 string systemText =
     """
-        You are a helpful chatbot agent to response user's queries.        
+        You are a helpful chatbot agent who responds to users' queries.
+        You need to identify the response type for the user's request and return the result using the correct type such as "General", "RAG", or "Tool_Call".
     """;
 
 var rag = """
         Company Information:
             Name: Mayon technologies
             Address: 12345, Kinston st.
-            Vision: To be provide a valuable services to the customers.
-            Mission: Our core values are to generate a standart tools to the market.
+            Vision: To provide valuable services to customers.
+            Mission: To provide standard tools to the market.
         """;
 
 var tools =
@@ -53,7 +54,7 @@ var tasks =
     """;
 
 var resultTemplate = """
-        {"Response_Type":"General | RAG | Tool_Validation | Tool_Call | Tool_Response", ResponseText:"", Tool_Name=""}
+        {"Response_Type":"", ResponseText:"", Tool_Name=""}
     """;
 
 await tinyAgent.AddSysMessage(systemText);
@@ -63,7 +64,7 @@ await tinyAgent.AddAgentRolesTask(tasks);
 await tinyAgent.ExpectedOutput("JSON", resultTemplate);
 await tinyAgent.Setup(modelPath: modelPath, supressAIComments: true);
 //Chat begin
-Console.Write("Please wait for the moment. I'm getting ready now...\n");
+Console.Write("Please wait for a moment. I'm getting ready now...\n");
 bool initAgent = false;
 var input = "Introduce yourself.";
 while (true)

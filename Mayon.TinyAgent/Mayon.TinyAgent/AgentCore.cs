@@ -35,55 +35,55 @@ namespace Mayon.TinyAgent
         /// Optional role/task description exposed as a public static so it can be set externally.
         /// This text is added as a system message during session setup when present.
         /// </summary>
-        public static string _agentTasks;
+        private protected string? _agentTasks;
 
         /// <summary>
         /// Local filesystem path to the LLama model files. Populated via <see cref="Setup(string, bool)"/>.
         /// This value is used to construct <see cref="ModelParams"/> when loading model weights.
         /// </summary>
-        private static string _modelPath;
+        private protected string? _modelPath;
 
         /// <summary>
         /// Expected output format (for example "text" or "json"). Added to system messages on setup.
         /// This is used to instruct the model about the format of the response.
         /// </summary>
-        private static string _expectedOutput;
+        private protected string? _expectedOutput;
 
         /// <summary>
         /// Optional output template or schema string that supplements <see cref="_expectedOutput"/>.
         /// When provided it is appended to the system prompt to better constrain the model output.
         /// </summary>
-        private static string _expectedOutputTempl;
+        private protected string? _expectedOutputTempl;
 
         /// <summary>
         /// Optional initial system message that is injected into the chat history on setup.
         /// Use <see cref="AddSysMessage(string)"/> to populate this value.
         /// </summary>
-        private static string _kichStartSystemMsg;
+        private protected string? _kichStartSystemMsg;
 
         /// <summary>
         /// Optional tools description (JSON or text) that is injected into the chat history on setup.
         /// Set via <see cref="AddToolJson(string)"/> to inform the model about available tool metadata.
         /// </summary>
-        private static string _toolsJson;
+        private protected string? _toolsJson;
 
         /// <summary>
         /// Optional context or retrieval-augmented generation (RAG) data that is injected into the chat
         /// history during setup. Use <see cref="AddContextData(string)"/> to populate this field.
         /// </summary>
-        private static string _ragOrContextData;
+        private protected string? _ragOrContextData;
 
         /// <summary>
         /// Inference options used for generation (max tokens, anti-prompts, etc.).
         /// Configured during <see cref="Setup(string, bool)"/>.
         /// </summary>
-        private static InferenceParams inferenceParams;
+        private protected InferenceParams? inferenceParams;
 
         /// <summary>
         /// Active chat session. Created and initialized in <see cref="Setup(string, bool)"/>.
         /// The session is reused across instances of <see cref="AgentCore"/> because it is static.
         /// </summary>
-        private static ChatSession session;
+        private protected ChatSession? session;
 
         /// <summary>
         /// Create a new <see cref="AgentCore"/> instance.
@@ -146,6 +146,22 @@ namespace Mayon.TinyAgent
                     Context Data:
                         {RagOrContextData}
                     """;
+            }
+        }
+
+        public async Task AddRagDocument(FileInfo file)
+        {
+            if(file.Extension == "txt")
+            {
+
+            }
+        }
+
+        public async Task AddRagURL(Uri path)
+        {
+            if (path.AbsoluteUri != "")
+            {
+                //Web Scrapping
             }
         }
 
@@ -288,12 +304,13 @@ namespace Mayon.TinyAgent
                     if (!string.IsNullOrWhiteSpace(_expectedOutputTempl))
                     {
                         output += $"""
-                            with the format: {_expectedOutputTempl}
+                            with the template: {_expectedOutputTempl}
                         """;
                     }
+
                     history.AddMessage(AuthorRole.System, output);
                 }
-                
+
                 if (supressAIComments)
                 {
                     // Clear, grammatically-correct instruction to the model to return only the expected output
