@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="DemoConsole/DemoConsole.csproj" />
+  <Project Path="Mayon.TinyAgent/Mayon.TinyAgent.csproj" />
+</Solution>
