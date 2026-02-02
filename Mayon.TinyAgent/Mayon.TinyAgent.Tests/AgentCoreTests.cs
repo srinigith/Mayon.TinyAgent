@@ -5,9 +5,11 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Mayon.TinyAgent;
 using Xunit;
+using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Mayon.TinyAgent.Tests
 {
+    [TestClass]
     public class AgentCoreTests
     {
         private static void ResetStaticFields()
@@ -29,7 +31,7 @@ namespace Mayon.TinyAgent.Tests
 
             foreach (var name in staticFieldNames)
             {
-                var f = type.GetField(name, BindingFlags.Static | BindingFlags.NonPublic);
+                var f = type.GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
                 if (f != null)
                 {
                     // set reference types to null; leave value types default
@@ -46,104 +48,104 @@ namespace Mayon.TinyAgent.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddSysMessage_SetsPrivateField()
         {
-            ResetStaticFields();
-            var core = new AgentCore();
+            //ResetStaticFields();
+            var core = new AgentCore("tester", "tester");
             await core.AddSysMessage("initial-system-msg");
 
-            var f = typeof(AgentCore).GetField("_kichStartSystemMsg", BindingFlags.Static | BindingFlags.NonPublic);
-            var val = f.GetValue(null) as string;
-            Assert.Equal("initial-system-msg", val);
+            var f = typeof(AgentCore).GetField("_kichStartSystemMsg", BindingFlags.Instance | BindingFlags.NonPublic);
+            var val = f?.GetValue(core) as string;
+            Xunit.Assert.Equal("initial-system-msg", val);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddToolJson_SetsToolsJsonField_WithPrefix()
         {
-            ResetStaticFields();
+            //ResetStaticFields();
             var core = new AgentCore();
             var json = "{\"tool\":\"x\"}";
             await core.AddToolJson(json);
 
-            var f = typeof(AgentCore).GetField("_toolsJson", BindingFlags.Static | BindingFlags.NonPublic);
-            var val = f.GetValue(null) as string;
-            Assert.NotNull(val);
+            var f = typeof(AgentCore).GetField("_toolsJson", BindingFlags.Instance | BindingFlags.NonPublic);
+            var val = f.GetValue(core) as string;
+            Assert.IsNotNull(val);
             Assert.Contains("Tools Data:", val);
             Assert.Contains(json, val);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddContextData_SetsRagOrContextDataField_WithPrefix()
         {
-            ResetStaticFields();
+            //ResetStaticFields();
             var core = new AgentCore();
             var ctx = "some context data";
             await core.AddContextData(ctx);
 
-            var f = typeof(AgentCore).GetField("_ragOrContextData", BindingFlags.Static | BindingFlags.NonPublic);
-            var val = f.GetValue(null) as string;
-            Assert.NotNull(val);
+            var f = typeof(AgentCore).GetField("_ragOrContextData", BindingFlags.Instance | BindingFlags.NonPublic);
+            var val = f.GetValue(core) as string;
+            Assert.IsNotNull(val);
             Assert.Contains("Context Data:", val);
             Assert.Contains(ctx, val);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddAgentRolesTask_SetsAgentTasksField()
         {
-            ResetStaticFields();
+            //ResetStaticFields();
             var core = new AgentCore();
             var tasks = "do important work";
             await core.AddAgentRolesTask(tasks);
 
-            var f = typeof(AgentCore).GetField("_agentTasks", BindingFlags.Static | BindingFlags.NonPublic);
-            var val = f.GetValue(null) as string;
-            Assert.NotNull(val);
+            var f = typeof(AgentCore).GetField("_agentTasks", BindingFlags.Instance | BindingFlags.NonPublic);
+            var val = f.GetValue(core) as string;
+            Assert.IsNotNull(val);
             Assert.Contains("Your primary role's tasks are as follows:", val);
             Assert.Contains(tasks, val);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ExpectedOutput_SetsExpectedOutputAndTemplate()
         {
-            ResetStaticFields();
+            //ResetStaticFields();
             var core = new AgentCore();
             await core.ExpectedOutput("text", "{schema}");
 
-            var fFormat = typeof(AgentCore).GetField("_expectedOutput", BindingFlags.Static | BindingFlags.NonPublic);
-            var fTempl = typeof(AgentCore).GetField("_expectedOutputTempl", BindingFlags.Static | BindingFlags.NonPublic);
+            var fFormat = typeof(AgentCore).GetField("_expectedOutput", BindingFlags.Instance | BindingFlags.NonPublic);
+            var fTempl = typeof(AgentCore).GetField("_expectedOutputTempl", BindingFlags.Instance | BindingFlags.NonPublic);
 
-            Assert.Equal("text", fFormat.GetValue(null) as string);
-            Assert.Equal("{schema}", fTempl.GetValue(null) as string);
+            Assert.AreEqual("text", fFormat.GetValue(core) as string);
+            Assert.AreEqual("{schema}", fTempl.GetValue(core) as string);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Setup_WithEmptyModelPath_DoesNotCreateSession()
         {
-            ResetStaticFields();
+            //ResetStaticFields();
             var core = new AgentCore();
 
             // call Setup with empty path -> method should return early and not create a session
             await core.Setup("", contextSize: 512, gpuLayers: 0, maxTokens: 32, supressAIComments: true);
 
-            var sessionField = typeof(AgentCore).GetField("session", BindingFlags.Static | BindingFlags.NonPublic);
-            var sessionVal = sessionField.GetValue(null);
-            Assert.Null(sessionVal);
+            var sessionField = typeof(AgentCore).GetField("session", BindingFlags.Instance | BindingFlags.NonPublic);
+            var sessionVal = sessionField.GetValue(core);
+            Assert.IsNull(sessionVal);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Chat_WhenSessionIsNull_ReturnsModelNotConfiguredMessage()
         {
-            ResetStaticFields();
+            //ResetStaticFields();
             var core = new AgentCore();
             var result = await core.Chat("hello");
-            Assert.Equal("The model is not configured correctly. Check your model path and settings to ensure correct operation.", result);
+            Assert.AreEqual("The model is not configured correctly. Check your model path and settings to ensure correct operation.", result);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ChatStream_WhenSessionIsNull_YieldsNoItems()
         {
-            ResetStaticFields();
+            //ResetStaticFields();
             var core = new AgentCore();
 
             var items = new List<string>();
@@ -152,7 +154,7 @@ namespace Mayon.TinyAgent.Tests
                 items.Add(t);
             }
 
-            Assert.Empty(items);
+            Assert.IsEmpty(items);
         }
     }
 }

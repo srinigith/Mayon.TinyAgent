@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="DemoConsole/DemoConsole.csproj" />
+  <Project Path="Mayon.TinyAgent.Tests/Mayon.TinyAgent.Tests.csproj" Id="c5b7c767-83a0-48e8-acc3-5e4e971c0e5e" />
   <Project Path="Mayon.TinyAgent/Mayon.TinyAgent.csproj" />
 </Solution>
